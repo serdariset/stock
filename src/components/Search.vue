@@ -67,7 +67,7 @@ export default {
       });
     },
     showMarket(symbol) {
-      this.$router.push({ path: "/market/symbol/" + symbol });
+      this.$router.push({ path: `/market/symbol/${symbol}/daily`  });
     },
   },
 };

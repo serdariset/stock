@@ -56,11 +56,11 @@ export default new Vuex.Store({
     },
   },
   getters: {
-    setDailyResultsTwenty(state) {
-      return Object.values(state.dailyResults).slice(0, 20);
+    setDailyResultsThirty(state) {
+      return Object.values(state.dailyResults).slice(0, 30);
     },
-    setDatesTwenty(state) {
-      return Object.keys(state.dailyResults).slice(0, 20);
+    setDatesThirty(state) {
+      return Object.keys(state.dailyResults).slice(0, 30);
     },
    
   },
