@@ -11,7 +11,7 @@ const routes = [
     component: Home
   },
   {
-    path: '/market/symbol/:id/daily',
+    path: '/market/symbol/:id/:moment',
     name: 'Market',
     component: () => import( '../views/Market.vue')
   }

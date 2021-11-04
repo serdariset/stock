@@ -1,7 +1,7 @@
 <template>
   <v-container class="container--fluid">
     <v-row class="header" >
-      <v-col class="d-flex justify-start"><span><i class="fas fa-dollar-sign"></i></span></v-col>
+      <v-col class="d-flex justify-start "><span @click="homePage()" class="dollar"><i class="fas fa-dollar-sign"></i></span></v-col>
       <v-col class="d-flex justify-end"><span><i class="fas fa-user"></i></span></v-col>
     </v-row>
   </v-container>
@@ -10,7 +10,11 @@
 <script>
   export default {
     name: 'Header',
-
+    methods:{
+      homePage(){
+        this.$router.push({path:'/'})
+      }
+    }
   }
 </script>
 <style scoped lang="scss">
@@ -24,5 +28,8 @@
   }
   .header span{
     color: white;
+  }
+  .dollar{
+    cursor: pointer;
   }
 </style>

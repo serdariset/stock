@@ -51,6 +51,7 @@ export default {
       searchValue: "",
       searchQuantity: 1,
       loading: false,
+      
     };
   },
   computed: {

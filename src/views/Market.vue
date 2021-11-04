@@ -2,14 +2,30 @@
   <v-container>
     <v-row class="d-flex justify-center flex-column page-container">
       <v-col class="button-container">
-        <button :class="buttonActive == 0 ? 'active':''" @click="setStock(0)">Daily</button>
-        <button :class="buttonActive == 1 ? 'active':''" @click="setStock(1)">Weekly</button>
-        <button :class="buttonActive == 2 ? 'active':''" @click="setStock(2)">Monthly</button>
+        <button
+          :class="buttonActive == 0 ? 'active' : ''"
+          @click="setStock(0, 'daily')"
+        >
+          Daily
+        </button>
+        <button
+          :class="buttonActive == 1 ? 'active' : ''"
+          @click="setStock(1, 'weekly')"
+        >
+          Weekly
+        </button>
+        <button
+          :class="buttonActive == 2 ? 'active' : ''"
+          @click="setStock(2, 'monthly')"
+        >
+          Monthly
+        </button>
       </v-col>
       <v-col class="d-flex justify-center">
         <div id="candleChart" ref="candle"></div>
       </v-col>
     </v-row>
+    {{ dates }}
   </v-container>
 </template>
 <script>
@@ -17,38 +33,81 @@ import { mapActions, mapGetters, mapState } from "vuex";
 import * as d3 from "d3";
 export default {
   name: "Market",
-  data(){
-    return{
-      buttonActive:0,
-    }
+  data() {
+    return {
+      buttonActive: 0,
+      marketMoment: "daily",
+      dates: [],
+      result: [],
+      moment: [],
+    };
   },
-  
-  created() {
+
+  created() { //draws the graph by default with daily data when the page is created
     if (this.$route.params.id) {
-      this.getCompanyDailyStockValues(this.$route.params.id)
-      .then(()=>this.createChart())
+      this.getCompanyDailyStockValues(this.$route.params.id).then(() => {
+        this.dates = this.setDailyDatesThirty;
+        this.result = this.setDailyResultsThirty;
+        this.moment = this.dailyResults;
+        this.createChart();
+      });
     }
-    console.log(this.$route.params.id)
   },
-  computed: {
-    ...mapGetters(["setDailyResultsThirty", "setDatesThirty"]),
-    ...mapState(["dailyResults"]),
-    
+  computed: { // Gets edited datas
+    ...mapGetters([
+      "setDailyResultsThirty",
+      "setDailyDatesThirty",
+      "setWeeklyResultsThirty",
+      "setWeeklyDatesThirty",
+    ]),
+    ...mapState(["dailyResults", "weeklyResults"]),
   },
 
-  methods: {
-    ...mapActions(["getCompanyDailyStockValues"]),
+  methods: { // Sends API requests
+    ...mapActions([
+      "getCompanyDailyStockValues",
+      "getCompanyWeeklyStockValues",
+    ]),
 
-    setStock(val){
-      this.buttonActive = val
+    setStock(val, moment) { // Changes daily, weekly or monthly data
+      this.buttonActive = val;
+      let symbol = this.$route.params.id;
+      if (val == 0) {
+        this.$router
+          .push({ path: `/market/symbol/${symbol}/${moment}` })
+          .then(() => {
+            this.dates = this.setDailyDatesThirty;
+            this.result = this.setDailyResultsThirty;
+            this.moment = this.dailyResults;
+            let area = this.$refs.candle;
+            area.innerHTML = "";
+            this.createChart();
+          });
+      }
+      if (val == 1) {
+        this.$router.push({ path: `/market/symbol/${symbol}/${moment}` });
+        this.getCompanyWeeklyStockValues(this.$route.params.id).then(() => {
+          this.dates = this.setWeeklyDatesThirty;
+          this.result = this.setWeeklyResultsThirty;
+          this.moment = this.weeklyResults;
+          let area = this.$refs.candle;
+          area.innerHTML = "";
+          this.createChart();
+        });
+      }
+
+      if (val == 2) {
+        this.$router.push({ path: `/market/symbol/${symbol}/${moment}` });
+      }
+      console.log(moment);
     },
 
-    createChart() {
+    createChart() { // Draws graph
       let margin = { top: 100, right: 50, bottom: 100, left: 50 };
       let width = 900;
       let height = 650;
 
-      const svg = d3
+      const svg = d3 // Draws graph main
         .select(this.$refs.candle)
         .append("svg")
         .attr("id", "chartsvg")
@@ -63,7 +122,7 @@ export default {
         .attr("stroke-width", "5px")
         .attr("fill", "#202124");
 
-      const graphicContainer = svg
+      const graphicContainer = svg // Candlestick container
         .append("g")
         .attr("width", width - margin.left * 2)
         .attr("height", height - 100)
@@ -76,31 +135,31 @@ export default {
         /*  .attr('fill','blue')  */
         .attr("transform", `translate(${50},${50})`);
 
-      let highs = [];
-      this.setDailyResultsThirty.forEach((item) => {
+      let highs = []; // Sort the highest and lowest values
+      this.result.forEach((item) => {
         highs.push(item["2. high"]);
       });
       let sorted = highs.sort((a, b) => b - a);
 
-      let list = [];
-      Object.keys(this.dailyResults)
+      let list = []; // Edits the data of the selected time period
+      Object.keys(this.moment)
         .slice(0, 30)
         .forEach((item) => {
           let obj = new Object({
-            ...this.dailyResults[item],
+            ...this.moment[item],
             date: item,
           });
           list.push(obj);
         });
       console.log(highs);
 
-      const axisX = d3
+      const axisX = d3 // Draws Axis X
         .scaleBand()
-        .domain(this.setDatesThirty.map((d) => d))
-        .range([ width - 115,0]);
+        .domain(this.dates.map((d) => d))
+        .range([width - 115, 0]);
 
       svg
-        .append("g") //x ekseni
+        .append("g") 
         .attr("transform", `translate(${50},${height - margin.top + 35})`)
         .attr("color", "white")
         .attr("stroke-width", "3px")
@@ -111,9 +170,9 @@ export default {
         .style("text-anchor", "end")
         .style("color", "white");
 
-      const axisY = d3
+      const axisY = d3 // Draws Axis Y
         .scaleLinear()
-        .domain([sorted[sorted.length - 1]-20, sorted[0]])
+        .domain([sorted[sorted.length - 1] - 20, sorted[0]])
         .range([height - 100, 15]);
 
       svg
@@ -124,73 +183,61 @@ export default {
         .attr("stroke-width", "3px")
         .attr("color", "white");
 
-     
-      graphicContainer
+      graphicContainer // Draws thin lines
         .selectAll("sticks")
         .data(list)
         .enter()
         .append("rect")
         .attr("x", function (d) {
-          return axisX(d.date)+(785/(d.date.length+1)-5);
+          return axisX(d.date) + (785 / (d.date.length + 1) - 5);
         })
         .attr("y", function (d) {
           if (d["2. high"] > d["3. low"]) {
-            return axisY(d["2. high"]-4);
+            return axisY(d["2. high"] - 4);
           } else {
-            return axisY(d["3. low"]-4);
+            return axisY(d["3. low"] - 4);
           }
         })
         .attr("width", 5)
         .attr("fill", "white")
-        .attr("height", (d) => Math.abs(d["2. high"] - d["3. low"]+15));
+        .attr("height", (d) => Math.abs(d["2. high"] - d["3. low"] + 15));
 
-      graphicContainer
+      graphicContainer // Draws candles
         .selectAll("candles")
         .data(list)
         .enter()
         .append("rect")
         .attr("x", function (d) {
-          return axisX(d.date) + (785/(d.date.length+1))-10;
+          return axisX(d.date) + 785 / (d.date.length + 1) - 10;
         })
-        /* (d)=>{return axisY(d3.max([d['1. open'],d['4. close']]))} */
-        .attr("y",(d)=>{
-          if(d['1. open']>d['4. close']){
-           return axisY(d['1. open']-4)
-            
-            
-          }else{
-           return axisY(d['4. close']-4)
-           
+        .attr("y", (d) => {
+          if (d["1. open"] > d["4. close"]) {
+            return axisY(d["1. open"] - 4);
+          } else {
+            return axisY(d["4. close"] - 4);
           }
         })
         .attr("width", 15)
-        .attr("height", (d) => Math.abs(d["1. open"] - d["4. close"]+4))
+        .attr("height", (d) => Math.abs(d["1. open"] - d["4. close"] + 4))
         .classed("rise", function (d) {
           return d["1. open"] < d["4. close"];
         })
         .classed("fall", function (d) {
           return d["1. open"] > d["4. close"];
         });
-
-       
-
     },
 
-    showDetail(){
-      console.log('evet')
-    }
-
-   
+    showDetail() {
+      console.log("evet");
+    },
   },
-
-  
-}
+};
 </script>
 <style lang="scss">
-.page-container{
+.page-container {
   position: relative;
 }
-.button-container{
+.button-container {
   display: flex;
   width: 500px;
   justify-content: space-around;
@@ -199,16 +246,15 @@ export default {
   top: 45px;
   left: 400px;
 }
-.button-container button{
+.button-container button {
   color: white;
   border: 2px solid white;
   width: 100px;
   height: 40px;
 }
-button.active{
+button.active {
   background-color: white;
   color: black;
-  
 }
 #candleChart {
   width: 1032px;
@@ -225,5 +271,4 @@ button.active{
 .fall {
   fill: red;
 }
-
 </style>

@@ -13,6 +13,7 @@ export default new Vuex.Store({
     },
     searchResults: [],
     dailyResults: [],
+    weeklyResults:[]
   },
   mutations: {
     // Set company market values by search
@@ -23,6 +24,9 @@ export default new Vuex.Store({
     SET_COMPANY_DAILY_DETAIL(state, payload) {
       state.dailyResults = payload;
     },
+    SET_COMPANY_WEEKLY_DETAIL(state,payload) {
+      state.weeklyResults = payload
+    }
   },
   actions: {
     // Get company markets values by search
@@ -33,7 +37,7 @@ export default new Vuex.Store({
           params: { keywords: payload, function: "SYMBOL_SEARCH" },
         })
         .then((res) => {
-          console.log(res.data.bestMatches);
+         
           commit("SET_COMPANY_SEARCH_RESULT", res.data.bestMatches); //Search result gives best matches
         })
         .catch((err) => console.log(err));
@@ -46,23 +50,41 @@ export default new Vuex.Store({
           params: {
             symbol: payload,
             function: "TIME_SERIES_DAILY",
-            outputsize: "compact",
           },
         })
         .then((res) => {
-          console.log(res)
+          console.log(res.data)
           commit("SET_COMPANY_DAILY_DETAIL", res.data["Time Series (Daily)"]);
         });
     },
+    getCompanyWeeklyStockValues({state,commit},payload){
+      return axios
+        .get(`${state.apiURL}`,{
+          headers:{...state.headers},
+          params:{
+            symbol:payload,
+            function: 'TIME_SERIES_WEEKLY'
+          },
+        })
+        .then((res)=>{
+          console.log(res)
+          commit('SET_COMPANY_WEEKLY_DETAIL',res.data['Weekly Time Series'])
+        })
+    }
   },
   getters: {
     setDailyResultsThirty(state) {
       return Object.values(state.dailyResults).slice(0, 30);
     },
-    setDatesThirty(state) {
+    setDailyDatesThirty(state) {
       return Object.keys(state.dailyResults).slice(0, 30);
     },
-   
+    setWeeklyResultsThirty(state){
+      return Object.values(state.weeklyResults).slice(0,30)
+    },
+    setWeeklyDatesThirty(state){
+      return Object.keys(state.weeklyResults).slice(0,30)
+    }
   },
 
   modules: {},
