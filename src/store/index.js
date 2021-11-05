@@ -13,7 +13,8 @@ export default new Vuex.Store({
     },
     searchResults: [],
     dailyResults: [],
-    weeklyResults:[]
+    weeklyResults:[],
+    monthlyResults:[]
   },
   mutations: {
     // Set company market values by search
@@ -24,8 +25,13 @@ export default new Vuex.Store({
     SET_COMPANY_DAILY_DETAIL(state, payload) {
       state.dailyResults = payload;
     },
+    // Set company market values weekly
     SET_COMPANY_WEEKLY_DETAIL(state,payload) {
       state.weeklyResults = payload
+    },
+    // Set company market values monthly
+    SET_COMPANY_MONTHLY_DETAIL(state,payload){
+      state.monthlyResults = payload
     }
   },
   actions: {
@@ -57,6 +63,7 @@ export default new Vuex.Store({
           commit("SET_COMPANY_DAILY_DETAIL", res.data["Time Series (Daily)"]);
         });
     },
+    // Get company weekly stock values with market symbol
     getCompanyWeeklyStockValues({state,commit},payload){
       return axios
         .get(`${state.apiURL}`,{
@@ -70,20 +77,36 @@ export default new Vuex.Store({
           console.log(res)
           commit('SET_COMPANY_WEEKLY_DETAIL',res.data['Weekly Time Series'])
         })
+    },
+    // Get company monthly stock values with market symbol
+    getCompanyMonthlyStockValues({state,commit},payload){
+      return axios.get(`${state.apiURL}`,{
+        headers:{...state.headers},
+        params:{function:'TIME_SERIES_MONTHLY', symbol:payload}
+      })
+      .then((res)=>{
+        commit('SET_COMPANY_MONTHLY_DETAIL',res.data['Monthly Time Series'])
+      })
     }
   },
   getters: {
-    setDailyResultsThirty(state) {
+    setDailyResultsThirty(state) { // Sets daily results 30 day
       return Object.values(state.dailyResults).slice(0, 30);
     },
-    setDailyDatesThirty(state) {
+    setDailyDatesThirty(state) { // Sets daily results 30 date
       return Object.keys(state.dailyResults).slice(0, 30);
     },
-    setWeeklyResultsThirty(state){
+    setWeeklyResultsThirty(state){ // Sets weekly results 30 date
       return Object.values(state.weeklyResults).slice(0,30)
     },
-    setWeeklyDatesThirty(state){
+    setWeeklyDatesThirty(state){ // Sets weekly results 30 date
       return Object.keys(state.weeklyResults).slice(0,30)
+    },
+    setMonthlyResultsThirty(state){ // Sets montly results 30 date
+      return Object.values(state.monthlyResults).slice(0,30)
+    },
+    setMontlyDatesThirty(state){ // Sets monthly results 30 date
+      return Object.keys(state.monthlyResults).slice(0,30)
     }
   },
 

@@ -59,20 +59,23 @@ export default {
       "setDailyDatesThirty",
       "setWeeklyResultsThirty",
       "setWeeklyDatesThirty",
+      "setMontlyDatesThirty",
+      "setMonthlyResultsThirty"
     ]),
-    ...mapState(["dailyResults", "weeklyResults"]),
+    ...mapState(["dailyResults", "weeklyResults","monthlyResults"]),
   },
 
   methods: { // Sends API requests
     ...mapActions([
       "getCompanyDailyStockValues",
       "getCompanyWeeklyStockValues",
+      "getCompanyMonthlyStockValues"
     ]),
 
     setStock(val, moment) { // Changes daily, weekly or monthly data
       this.buttonActive = val;
       let symbol = this.$route.params.id;
-      if (val == 0) {
+      if (val == 0) { //Daily
         this.$router
           .push({ path: `/market/symbol/${symbol}/${moment}` })
           .then(() => {
@@ -84,7 +87,7 @@ export default {
             this.createChart();
           });
       }
-      if (val == 1) {
+      if (val == 1) { //Weekly
         this.$router.push({ path: `/market/symbol/${symbol}/${moment}` });
         this.getCompanyWeeklyStockValues(this.$route.params.id).then(() => {
           this.dates = this.setWeeklyDatesThirty;
@@ -96,8 +99,16 @@ export default {
         });
       }
 
-      if (val == 2) {
+      if (val == 2) { //Montly
         this.$router.push({ path: `/market/symbol/${symbol}/${moment}` });
+        this.getCompanyMonthlyStockValues(this.$route.params.id).then(() => {
+          this.dates = this.setMontlyDatesThirty;
+          this.result = this.setMonthlyResultsThirty;
+          this.moment = this.monthlyResults;
+          let area = this.$refs.candle;
+          area.innerHTML = "";
+          this.createChart();
+        });
       }
       console.log(moment);
     },
