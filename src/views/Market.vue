@@ -188,7 +188,7 @@ export default {
           });
           list.push(obj);
         });
-        console.log(list)
+        
 
       container // Draws candle strippes
         .selectAll("candles")

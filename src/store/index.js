@@ -14,7 +14,8 @@ export default new Vuex.Store({
     searchResults: [],
     dailyResults: [],
     weeklyResults:[],
-    monthlyResults:[]
+    monthlyResults:[],
+    pathMoves:[]
   },
   mutations: {
     // Set company market values by search
@@ -32,6 +33,9 @@ export default new Vuex.Store({
     // Set company market values monthly
     SET_COMPANY_MONTHLY_DETAIL(state,payload){
       state.monthlyResults = payload
+    },
+    SET_PATH_MOVES(state,payload){
+      state.pathMoves.push(payload)
     }
   },
   actions: {
@@ -59,7 +63,7 @@ export default new Vuex.Store({
           },
         })
         .then((res) => {
-          console.log(res.data)
+         
           commit("SET_COMPANY_DAILY_DETAIL", res.data["Time Series (Daily)"]);
         });
     },
@@ -74,7 +78,7 @@ export default new Vuex.Store({
           },
         })
         .then((res)=>{
-          console.log(res)
+         
           commit('SET_COMPANY_WEEKLY_DETAIL',res.data['Weekly Time Series'])
         })
     },
@@ -87,7 +91,10 @@ export default new Vuex.Store({
       .then((res)=>{
         commit('SET_COMPANY_MONTHLY_DETAIL',res.data['Monthly Time Series'])
       })
-    }
+    },
+    getPathMoves({commit},payload){
+      return commit('SET_PATH_MOVES',payload)
+    },
   },
   getters: {
     setDailyResultsThirty(state) { // Sets daily results 30 day

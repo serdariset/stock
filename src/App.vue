@@ -11,17 +11,35 @@
 
 <script>
 import Header from '@/components/Header.vue'
+import { mapActions } from 'vuex';
 
 export default {
   name: 'App',
+  data(){
+    return{
+      paths:[]
+    }
+  },
   components:{
     Header,
     
+  },
+  methods:{
+    ...mapActions(['getPathMoves'])
   },
 
   watch:{
     $route(to,from){
       console.log(to,from)
+      let date = new Date()
+      let moves = [
+        {"date:": `${date}`},
+        {"to:":`${to.path}`},
+        {"from:":`${from.path}`}
+
+      ]
+      /* this.paths.push(moves) */
+      this.getPathMoves(moves)
     }
   }
 
