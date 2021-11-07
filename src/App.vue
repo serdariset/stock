@@ -11,16 +11,14 @@
 
 <script>
 import Header from '@/components/Header.vue'
-import * as fs from 'fs'
+
 export default {
   name: 'App',
   components:{
     Header,
     
   },
-  created(){
-    console.log(fs)
-  },
+
   watch:{
     $route(to,from){
       console.log(to,from)

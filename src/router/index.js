@@ -14,6 +14,16 @@ const routes = [
     path: '/market/symbol/:id/:moment',
     name: 'Market',
     component: () => import( '../views/Market.vue')
+  },
+  {
+    path:'/admin',
+    name:'Admin',
+    component: ()=> import('../views/Admin.vue')
+  },
+  {
+    path:'/error',
+    name:'Error',
+    component: ()=> import('../views/Error.vue')
   }
 ]
 
