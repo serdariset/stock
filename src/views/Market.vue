@@ -25,7 +25,6 @@
         <div id="candleChart" ref="candle"></div>
       </v-col>
     </v-row>
-    {{ dates }}
   </v-container>
 </template>
 <script>
@@ -43,7 +42,8 @@ export default {
     };
   },
 
-  created() { //draws the graph by default with daily data when the page is created
+  created() {
+    //draws the graph by default with daily data when the page is created
     if (this.$route.params.id) {
       this.getCompanyDailyStockValues(this.$route.params.id).then(() => {
         this.dates = this.setDailyDatesThirty;
@@ -53,29 +53,33 @@ export default {
       });
     }
   },
-  computed: { // Gets edited datas
+  computed: {
+    // Gets edited datas
     ...mapGetters([
       "setDailyResultsThirty",
       "setDailyDatesThirty",
       "setWeeklyResultsThirty",
       "setWeeklyDatesThirty",
       "setMontlyDatesThirty",
-      "setMonthlyResultsThirty"
+      "setMonthlyResultsThirty",
     ]),
-    ...mapState(["dailyResults", "weeklyResults","monthlyResults"]),
+    ...mapState(["dailyResults", "weeklyResults", "monthlyResults"]),
   },
 
-  methods: { // Sends API requests
+  methods: {
+    // Sends API requests
     ...mapActions([
       "getCompanyDailyStockValues",
       "getCompanyWeeklyStockValues",
-      "getCompanyMonthlyStockValues"
+      "getCompanyMonthlyStockValues",
     ]),
 
-    setStock(val, moment) { // Changes daily, weekly or monthly data
+    setStock(val, moment) {
+      // Changes daily, weekly or monthly data
       this.buttonActive = val;
       let symbol = this.$route.params.id;
-      if (val == 0) { //Daily
+      if (val == 0) {
+        //Daily
         this.$router
           .push({ path: `/market/symbol/${symbol}/${moment}` })
           .then(() => {
@@ -87,7 +91,8 @@ export default {
             this.createChart();
           });
       }
-      if (val == 1) { //Weekly
+      if (val == 1) {
+        //Weekly
         this.$router.push({ path: `/market/symbol/${symbol}/${moment}` });
         this.getCompanyWeeklyStockValues(this.$route.params.id).then(() => {
           this.dates = this.setWeeklyDatesThirty;
@@ -99,7 +104,8 @@ export default {
         });
       }
 
-      if (val == 2) { //Montly
+      if (val == 2) {
+        //Montly
         this.$router.push({ path: `/market/symbol/${symbol}/${moment}` });
         this.getCompanyMonthlyStockValues(this.$route.params.id).then(() => {
           this.dates = this.setMontlyDatesThirty;
@@ -110,47 +116,67 @@ export default {
           this.createChart();
         });
       }
-      console.log(moment);
     },
 
-    createChart() { // Draws graph
-      let margin = { top: 100, right: 50, bottom: 100, left: 50 };
-      let width = 900;
-      let height = 650;
+    createChart() {
+      // Draws graph
+      let margin = { top: 50, left: 100, bottom: 200, rigth: 100 };
+      let width = 1300;
+      let height = 1000;
 
-      const svg = d3 // Draws graph main
+      const container = d3
         .select(this.$refs.candle)
         .append("svg")
-        .attr("id", "chartsvg")
-        .attr("width", width)
-        .attr("height", height);
-      svg
-        .append("rect")
-        .attr("id", "rect")
         .attr("width", width)
         .attr("height", height)
-        .attr("stroke", "white")
-        .attr("stroke-width", "5px")
-        .attr("fill", "#202124");
-
-      const graphicContainer = svg // Candlestick container
         .append("g")
-        .attr("width", width - margin.left * 2)
-        .attr("height", height - 100)
-        .attr("fill", "transparent");
+        .attr("transform", `translate(0,0)`);
 
-      graphicContainer
-        .append("rect")
-        .attr("width", width - margin.left * 2 - 15)
-        .attr("height", height - 115)
-        /*  .attr('fill','blue')  */
-        .attr("transform", `translate(${50},${50})`);
+      const axisX = d3
+
+        .scaleBand()
+        .range([0, width - margin.left - margin.rigth])
+        .domain(this.dates.map((d) => d))
+        .padding(0.2);
+
+      container
+        .append("g")
+        .attr(
+          "transform",
+          `translate(${margin.rigth},${height - margin.bottom})`
+        )
+        .attr("color", "white")
+        .attr("stroke-width", 3)
+        .call(d3.axisBottom(axisX))
+        .selectAll("text")
+        .attr("transform", "translate(-5,10)rotate(-45)")
+        .style("text-anchor", "end");
 
       let highs = []; // Sort the highest and lowest values
       this.result.forEach((item) => {
         highs.push(item["2. high"]);
       });
-      let sorted = highs.sort((a, b) => b - a);
+      let sortedHigh = highs.sort((a, b) => b - a);
+
+      let lows = []
+      this.result.forEach((item)=> {
+        lows.push(item['3. low'])
+      })
+      let sortedLow = lows.sort((a,b)=>b-a)
+
+      
+
+      const axisY = d3
+        .scaleLinear()
+        .domain([sortedLow[sortedLow.length - 1], sortedHigh[0]])
+        .range([height - margin.bottom, 0]);
+
+      container
+        .append("g")
+        .attr("transform", `translate(${margin.rigth},0)`)
+        .attr("color", "white")
+        .attr("stroke-width", 3)
+        .call(d3.axisLeft(axisY));
 
       let list = []; // Edits the data of the selected time period
       Object.keys(this.moment)
@@ -162,84 +188,53 @@ export default {
           });
           list.push(obj);
         });
-      console.log(highs);
+        console.log(list)
 
-      const axisX = d3 // Draws Axis X
-        .scaleBand()
-        .domain(this.dates.map((d) => d))
-        .range([width - 115, 0]);
-
-      svg
-        .append("g") 
-        .attr("transform", `translate(${50},${height - margin.top + 35})`)
-        .attr("color", "white")
-        .attr("stroke-width", "3px")
-
-        .call(d3.axisBottom(axisX))
-        .selectAll("text")
-        .attr("transform", "translate(-5,10)rotate(-45)")
-        .style("text-anchor", "end")
-        .style("color", "white");
-
-      const axisY = d3 // Draws Axis Y
-        .scaleLinear()
-        .domain([sorted[sorted.length - 1] - 20, sorted[0]])
-        .range([height - 100, 15]);
-
-      svg
-        .append("g") //y ekseni
-        .attr("transform", `translate(${50},${35})`)
-        .call(d3.axisLeft(axisY))
-        .style("color", "white")
-        .attr("stroke-width", "3px")
-        .attr("color", "white");
-
-      graphicContainer // Draws thin lines
-        .selectAll("sticks")
-        .data(list)
-        .enter()
-        .append("rect")
-        .attr("x", function (d) {
-          return axisX(d.date) + (785 / (d.date.length + 1) - 5);
-        })
-        .attr("y", function (d) {
-          if (d["2. high"] > d["3. low"]) {
-            return axisY(d["2. high"] - 4);
-          } else {
-            return axisY(d["3. low"] - 4);
-          }
-        })
-        .attr("width", 5)
-        .attr("fill", "white")
-        .attr("height", (d) => Math.abs(d["2. high"] - d["3. low"] + 15));
-
-      graphicContainer // Draws candles
+      container // Draws candle strippes
         .selectAll("candles")
         .data(list)
         .enter()
         .append("rect")
+        .attr('rx',5)
+        .attr('ry',5)
         .attr("x", function (d) {
-          return axisX(d.date) + 785 / (d.date.length + 1) - 10;
+          return axisX(d.date);
         })
-        .attr("y", (d) => {
-          if (d["1. open"] > d["4. close"]) {
-            return axisY(d["1. open"] - 4);
-          } else {
-            return axisY(d["4. close"] - 4);
-          }
+        .attr("y", function (d) {
+          return axisY(d3.max([parseFloat(d["1. open"]), parseFloat(d["4. close"])]))+margin.bottom})
+        .attr("width", 10)
+        .attr("height", function (d) {
+          return Math.abs(axisY(d["1. open"]) - axisY(d["4. close"]));
         })
-        .attr("width", 15)
-        .attr("height", (d) => Math.abs(d["1. open"] - d["4. close"] + 4))
-        .classed("rise", function (d) {
-          return d["1. open"] < d["4. close"];
-        })
-        .classed("fall", function (d) {
-          return d["1. open"] > d["4. close"];
-        });
-    },
+        .attr("transform", `translate(${margin.rigth + 15},${-margin.bottom})`)
+        .classed("fall", function(d) { return (d["4. close"]>d["1. open"]); })
+        .classed("rise", function(d) { return (d["1. open"]>d["4. close"]); })
 
-    showDetail() {
-      console.log("evet");
+      container
+      .selectAll('sticks')
+      .data(list)
+      .enter()
+      .append('rect')
+      .attr('rx',5)
+      .attr('ry',5)
+      .attr("x", function (d) {
+          return axisX(d.date);
+        })
+        .attr("y",function(d){
+						if(parseFloat(d['2. high'])>parseFloat(d['3. low'])){
+							return axisY(d['2. high'])
+						}else{
+							return axisY(d['3. low'])
+						}
+				})
+				.attr("width",2)
+				.attr("height", function(d) {return axisY(d['3. low'])-axisY(d['2. high'])})
+        .attr("transform", `translate(${margin.rigth+19},0)`)
+        .classed("fall", function(d) { return (d["4. close"]>d["1. open"]); })
+        .classed("rise", function(d) { return (d["1. open"]>d["4. close"]); })
+
+
+     
     },
   },
 };
@@ -268,8 +263,7 @@ button.active {
   color: black;
 }
 #candleChart {
-  width: 1032px;
-  height: 782px;
+  padding: 5rem;
   border: 3px solid white;
   margin-top: 2rem;
   display: flex;
