@@ -41,7 +41,7 @@ export default {
         if (this.pathMoves[index]['to:'] == "/error") {
           this.items[1].children.push({
             id:index,
-            name:`${this.pathMoves[index]['date:'].slice(0,16)}`,
+            name:`${this.pathMoves[index]['date:'].slice(0,25)}`,
             children:[
               {id:index, name:`to: ${this.pathMoves[index]['to:']}`},
               {id:index, name:`from: ${this.pathMoves[index]['from:']}`}
@@ -54,7 +54,7 @@ export default {
         if (this.pathMoves[index]['to:'] !== "/error") {
           this.items[0].children.push({
             id:index,
-            name:`${this.pathMoves[index]['date:'].slice(0,16)}`,
+            name:`${this.pathMoves[index]['date:'].slice(0,25)}`,
             children:[
               {id:index, name:`to: ${this.pathMoves[index]['to:']}`},
               {id:index, name:`from: ${this.pathMoves[index]['from:']}`}

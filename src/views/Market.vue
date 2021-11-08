@@ -122,7 +122,7 @@ export default {
       // Draws graph
       let margin = { top: 50, left: 100, bottom: 200, rigth: 100 };
       let width = 1300;
-      let height = 1000;
+      let height = 1500;
 
       const container = d3
         .select(this.$refs.candle)
@@ -143,7 +143,7 @@ export default {
         .append("g")
         .attr(
           "transform",
-          `translate(${margin.rigth},${height - margin.bottom})`
+          `translate(${margin.rigth},${height - margin.bottom-500})`
         )
         .attr("color", "white")
         .attr("stroke-width", 3)
@@ -164,19 +164,27 @@ export default {
       })
       let sortedLow = lows.sort((a,b)=>b-a)
 
+      let volume = []
+      this.result.forEach((item)=> {
+        volume.push(item['5. volume'])
+      })
+
+      let sortedVolume = volume.sort((a,b)=>b-a)
+      
       
 
       const axisY = d3
         .scaleLinear()
         .domain([sortedLow[sortedLow.length - 1], sortedHigh[0]])
-        .range([height - margin.bottom, 0]);
+        .range([height - margin.bottom-500, 0]);
 
       container
         .append("g")
         .attr("transform", `translate(${margin.rigth},0)`)
         .attr("color", "white")
         .attr("stroke-width", 3)
-        .call(d3.axisLeft(axisY));
+        .call(d3.axisLeft(axisY))
+        
 
       let list = []; // Edits the data of the selected time period
       Object.keys(this.moment)
@@ -189,6 +197,57 @@ export default {
           list.push(obj);
         });
         
+        const volumeX = d3
+      .scaleBand()
+      .range([0, width - margin.left - margin.rigth])
+      .domain(list.map((d)=>d['5. volume']))
+      .padding(0.2);
+     
+      console.log(list)
+
+      container
+      .append("g")
+        .attr(
+          "transform",
+          `translate(${margin.rigth},${height - margin.bottom})`
+        )
+        .attr("color", "white")
+        .attr("stroke-width", 3)
+        .call(d3.axisBottom(volumeX))
+        .selectAll("text")
+       
+        .style("display", "none");
+
+        const volumeY = d3
+        .scaleLinear()
+        .range([300,0])
+        .domain([sortedVolume[sortedVolume.length-1],sortedVolume[0]])
+
+        container
+        .append('g')
+        .attr("transform", `translate(${margin.rigth},${height-300-200})`)
+        .attr("color", "white")
+        .attr("stroke-width", 3)
+        .call(d3.axisLeft(volumeY))
+
+        container
+        .selectAll('volumeBar')
+        .data(list)
+        .enter()
+        .append('rect')
+        .attr("x", function (d) {
+          return axisX(d.date);
+        })
+        .attr("y", function (d) {
+          return volumeY(d['5. volume']);
+        })
+        .attr("width", volumeX.bandwidth())
+        .attr("height", function (d) {
+          return 300-  volumeY(d['5. volume']);
+        })
+        .attr("transform", `translate(${margin.rigth},${height-500})`)
+        .attr("fill", "#601f79");
+
 
       container // Draws candle strippes
         .selectAll("candles")
@@ -233,6 +292,7 @@ export default {
         .classed("fall", function(d) { return (d["4. close"]>d["1. open"]); })
         .classed("rise", function(d) { return (d["1. open"]>d["4. close"]); })
 
+      
 
      
     },
