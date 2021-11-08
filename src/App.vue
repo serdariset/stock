@@ -21,12 +21,13 @@ export default {
     
   },
   methods:{
-    ...mapActions(['getPathMoves'])
+    ...mapActions(['getPathMoves']) // vuex path change method
   },
 
+    // watch path changes
   watch:{
     $route(to,from){
-      console.log(to,from)
+ 
       let date = new Date()
       let moves = {
         "date:": `${date}`,
@@ -34,7 +35,7 @@ export default {
         "from:":`${from.path}`
         }
       
-  
+      // send path changes to vuex
       this.getPathMoves(moves)
     }
   }

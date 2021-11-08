@@ -10,9 +10,9 @@
           v-model="searchValue"
         />
 
-        <!--  <button class="search-button" @click="search()">
+      <button class="search-button" @click="search()">
           <i class="fas fa-search-dollar"></i>
-        </button> -->
+        </button> 
       </v-col>
     </v-row>
     <v-row class="d-flex justify-center" >
@@ -55,14 +55,15 @@ export default {
     };
   },
   computed: {
-    ...mapState(["searchResults"]),
+    ...mapState(["searchResults"]), // get search results
   },
   methods: {
     ...mapActions(["searchCompanyByName"]),
+    // search companies with search bar
     search() {
       this.$router.push({name:'Home', query:{symbol:this.searchValue}})
       this.loading = true;
-      this.searchCompanyByName(this.searchValue).then(() => {
+      this.searchCompanyByName(this.searchValue).then(() => { // send api request with search value
         this.searchQuantity = this.searchResults.length;
         this.loading = false;
       });
@@ -97,7 +98,8 @@ export default {
   width: 50px;
   height: 50px;
   min-width: 50px;
-  background-color: #3f51b5;
+  background-color: transparent;
+  border: 3px solid white;
   border-radius: 50%;
   display: flex;
   margin-left: 10px;
@@ -106,9 +108,9 @@ export default {
   justify-content: center;
   i {
     color: white;
-    background-color: #3f51b5 !important;
     font-size: 1rem;
   }
+  
 }
 
 .markets {

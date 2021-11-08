@@ -116,26 +116,7 @@ export default new Vuex.Store({
     setMontlyDatesThirty(state){ // Sets monthly results 30 date
       return Object.keys(state.monthlyResults).slice(0,30)
     },
-    /* setErrorLogs(state){
-      let errors = []
-      for (let index = 0; index< state.pathMoves.length;index++){
-        if(state.pathMoves[index][1] == '/error'){
-         errors.push(state.pathMoves[index]) 
-      }
-      return errors
-    }
-   },
-   setSuccessLogs(state){
-     
-    let success = []
-    for (let index = 0; index< state.pathMoves.length;index++){
-        success.push(state.pathMoves[index])
-       
-
-    }
-    return success
-      
-   } */
+  
   },
 
   modules: {},

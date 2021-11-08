@@ -57,5 +57,9 @@
     margin-right: 1rem;
     color: white;
     width: 4rem;
+    cursor: pointer;
+  }
+  .fa-user{
+    cursor: pointer;
   }
 </style>

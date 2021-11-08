@@ -132,18 +132,18 @@ export default {
         .append("g")
         .attr("transform", `translate(0,0)`);
 
-      const axisX = d3
+      const axisX = d3 // create axis x
 
         .scaleBand()
         .range([0, width - margin.left - margin.rigth])
         .domain(this.dates.map((d) => d))
         .padding(0.2);
 
-      container
+      container // axis x properties
         .append("g")
         .attr(
           "transform",
-          `translate(${margin.rigth},${height - margin.bottom-500})`
+          `translate(${margin.rigth},${height - margin.bottom - 500})`
         )
         .attr("color", "white")
         .attr("stroke-width", 3)
@@ -158,33 +158,30 @@ export default {
       });
       let sortedHigh = highs.sort((a, b) => b - a);
 
-      let lows = []
-      this.result.forEach((item)=> {
-        lows.push(item['3. low'])
-      })
-      let sortedLow = lows.sort((a,b)=>b-a)
+      let lows = []; 
+      this.result.forEach((item) => {
+        lows.push(item["3. low"]);
+      });
+      let sortedLow = lows.sort((a, b) => b - a);
 
-      let volume = []
-      this.result.forEach((item)=> {
-        volume.push(item['5. volume'])
-      })
+      let volume = []; // sort volumes
+      this.result.forEach((item) => {
+        volume.push(item["5. volume"]);
+      });
 
-      let sortedVolume = volume.sort((a,b)=>b-a)
-      
-      
+      let sortedVolume = volume.sort((a, b) => b - a);
 
-      const axisY = d3
+      const axisY = d3 // create axis y
         .scaleLinear()
         .domain([sortedLow[sortedLow.length - 1], sortedHigh[0]])
-        .range([height - margin.bottom-500, 0]);
+        .range([height - margin.bottom - 500, 0]);
 
-      container
+      container // axis y properties
         .append("g")
         .attr("transform", `translate(${margin.rigth},0)`)
         .attr("color", "white")
         .attr("stroke-width", 3)
-        .call(d3.axisLeft(axisY))
-        
+        .call(d3.axisLeft(axisY));
 
       let list = []; // Edits the data of the selected time period
       Object.keys(this.moment)
@@ -196,17 +193,15 @@ export default {
           });
           list.push(obj);
         });
-        
-        const volumeX = d3
-      .scaleBand()
-      .range([0, width - margin.left - margin.rigth])
-      .domain(list.map((d)=>d['5. volume']))
-      .padding(0.2);
-     
-      console.log(list)
 
-      container
-      .append("g")
+      const volumeX = d3 // create axis x volume values
+        .scaleBand()
+        .range([0, width - margin.left - margin.rigth])
+        .domain(list.map((d) => d["5. volume"]))
+        .padding(0.2);
+
+      container // axis x volume properties
+        .append("g")
         .attr(
           "transform",
           `translate(${margin.rigth},${height - margin.bottom})`
@@ -215,86 +210,96 @@ export default {
         .attr("stroke-width", 3)
         .call(d3.axisBottom(volumeX))
         .selectAll("text")
-       
+
         .style("display", "none");
 
-        const volumeY = d3
+      const volumeY = d3 // create axis y vloume values
         .scaleLinear()
-        .range([300,0])
-        .domain([sortedVolume[sortedVolume.length-1],sortedVolume[0]])
+        .range([300, 0])
+        .domain([sortedVolume[sortedVolume.length - 1], sortedVolume[0]]);
 
-        container
-        .append('g')
-        .attr("transform", `translate(${margin.rigth},${height-300-200})`)
+      container // axis y volume properties
+        .append("g")
+        .attr("transform", `translate(${margin.rigth},${height - 300 - 200})`)
         .attr("color", "white")
         .attr("stroke-width", 3)
-        .call(d3.axisLeft(volumeY))
+        .call(d3.axisLeft(volumeY));
 
-        container
-        .selectAll('volumeBar')
+      container // volume bars and properties
+        .selectAll("volumeBar")
         .data(list)
         .enter()
-        .append('rect')
+        .append("rect")
         .attr("x", function (d) {
           return axisX(d.date);
         })
         .attr("y", function (d) {
-          return volumeY(d['5. volume']);
+          return volumeY(d["5. volume"]);
         })
         .attr("width", volumeX.bandwidth())
         .attr("height", function (d) {
-          return 300-  volumeY(d['5. volume']);
+          return 300 - volumeY(d["5. volume"]);
         })
-        .attr("transform", `translate(${margin.rigth},${height-500})`)
+        .attr("transform", `translate(${margin.rigth},${height - 500})`)
         .attr("fill", "#601f79");
-
 
       container // Draws candle strippes
         .selectAll("candles")
         .data(list)
         .enter()
         .append("rect")
-        .attr('rx',5)
-        .attr('ry',5)
+        .attr("rx", 5)
+        .attr("ry", 5)
         .attr("x", function (d) {
           return axisX(d.date);
         })
         .attr("y", function (d) {
-          return axisY(d3.max([parseFloat(d["1. open"]), parseFloat(d["4. close"])]))+margin.bottom})
+          return (
+            axisY(
+              d3.max([parseFloat(d["1. open"]), parseFloat(d["4. close"])])
+            ) + margin.bottom
+          );
+        })
         .attr("width", 10)
         .attr("height", function (d) {
           return Math.abs(axisY(d["1. open"]) - axisY(d["4. close"]));
         })
         .attr("transform", `translate(${margin.rigth + 15},${-margin.bottom})`)
-        .classed("fall", function(d) { return (d["4. close"]>d["1. open"]); })
-        .classed("rise", function(d) { return (d["1. open"]>d["4. close"]); })
+        .classed("fall", function (d) {
+          return d["4. close"] > d["1. open"];
+        })
+        .classed("rise", function (d) {
+          return d["1. open"] > d["4. close"];
+        });
 
-      container
-      .selectAll('sticks')
-      .data(list)
-      .enter()
-      .append('rect')
-      .attr('rx',5)
-      .attr('ry',5)
-      .attr("x", function (d) {
+      container // Draws thin strippes
+        .selectAll("sticks")
+        .data(list)
+        .enter()
+        .append("rect")
+        .attr("rx", 5)
+        .attr("ry", 5)
+        .attr("x", function (d) {
           return axisX(d.date);
         })
-        .attr("y",function(d){
-						if(parseFloat(d['2. high'])>parseFloat(d['3. low'])){
-							return axisY(d['2. high'])
-						}else{
-							return axisY(d['3. low'])
-						}
-				})
-				.attr("width",2)
-				.attr("height", function(d) {return axisY(d['3. low'])-axisY(d['2. high'])})
-        .attr("transform", `translate(${margin.rigth+19},0)`)
-        .classed("fall", function(d) { return (d["4. close"]>d["1. open"]); })
-        .classed("rise", function(d) { return (d["1. open"]>d["4. close"]); })
-
-      
-
-     
+        .attr("y", function (d) {
+          if (parseFloat(d["2. high"]) > parseFloat(d["3. low"])) {
+            return axisY(d["2. high"]);
+          } else {
+            return axisY(d["3. low"]);
+          }
+        })
+        .attr("width", 2)
+        .attr("height", function (d) {
+          return axisY(d["3. low"]) - axisY(d["2. high"]);
+        })
+        .attr("transform", `translate(${margin.rigth + 19},0)`)
+        .classed("fall", function (d) {
+          return d["4. close"] > d["1. open"];
+        })
+        .classed("rise", function (d) {
+          return d["1. open"] > d["4. close"];
+        });
     },
   },
 };
